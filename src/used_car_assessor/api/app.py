@@ -117,6 +117,12 @@ def create_app(
 
     application = FastAPI(title="Used-Car Listing Price Assessment", lifespan=lifespan)
 
+    def is_ready() -> bool:
+        recorder = application.state.recorder
+        return bool(
+            application.state.ready and recorder is not None and recorder.ping()
+        )
+
     @application.middleware("http")
     async def tracing_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
@@ -168,9 +174,7 @@ def create_app(
 
     @application.get("/ready", response_model=SuccessEnvelope)
     async def ready(request: Request) -> SuccessEnvelope | JSONResponse:
-        recorder = application.state.recorder
-        dependencies_ready = recorder is not None and recorder.ping()
-        if not application.state.ready or not dependencies_ready:
+        if not is_ready():
             return _error_response(
                 request,
                 503,
@@ -183,7 +187,7 @@ def create_app(
     async def predict(
         payload: PredictRequest, request: Request
     ) -> SuccessEnvelope | JSONResponse:
-        if not application.state.ready:
+        if not is_ready():
             return _error_response(request, 503, "NOT_READY", "Application is not ready")
         service = cast(AssessmentService, application.state.assessment_service)
         result = service.assess(
@@ -209,7 +213,7 @@ def create_app(
 
     @application.get("/v1/stats", response_model=SuccessEnvelope)
     async def stats(request: Request) -> SuccessEnvelope | JSONResponse:
-        if not application.state.ready:
+        if not is_ready():
             return _error_response(request, 503, "NOT_READY", "Application is not ready")
         recorder = cast(AssessmentRecorder, application.state.recorder)
         snapshot: Mapping[str, int] = recorder.snapshot()

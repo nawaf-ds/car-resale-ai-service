@@ -12,11 +12,11 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Existing project or dataset | VERIFIED | Approved project and checksum-pinned dataset snapshot now exist locally. |
 | Local Git repository | VERIFIED | Local `main` repository initialized with five genuine staged commits. |
 | Python | VERIFIED | `python --version` returned Python 3.11.9. |
-| Docker and Compose | BLOCKED | `docker` is not installed or not on `PATH`. Install Docker Desktop with Compose, start it, and verify `docker info` plus `docker compose version`. |
-| GitHub access/authentication | BLOCKED | Repository supplied as `https://github.com/nawaf-ds/car-resale-ai-service`, but anonymous `git ls-remote` returned `Repository not found`. The credential pasted into chat must be revoked and will not be used. Authenticate securely through Git Credential Manager/GitHub CLI, or correct repository visibility/URL, then retry. |
-| Branch-protection administration | BLOCKED | No GitHub repository or authenticated access is available. Repository owner/admin access is required to configure rulesets or branch protection. |
+| Docker and Compose | VERIFIED | Docker Engine 29.8.0 and Compose 5.5.1 built and ran the Linux stack successfully. |
+| GitHub access/authentication | IN_PROGRESS | Public repository fetch succeeds; authenticated push has not yet been verified. The credential pasted into chat is not used and should remain revoked. |
+| Branch-protection administration | BLOCKED | Repository owner/admin API authentication is required to configure and verify branch protection. |
 | Independent approving reviewer | BLOCKED | No reviewer availability is documented. Identify at least one reviewer who can approve a pull request to `main`. |
-| GNU Make | BLOCKED | `make` is not installed or not on `PATH`; required Makefile targets can be authored later but cannot yet be locally invoked. |
+| GNU Make | IN_PROGRESS | Required Makefile targets are authored and their underlying commands pass; GNU Make itself is not installed on this Windows host. |
 | `uv` package manager | VERIFIED | Optional and not selected; standard Python/pip tooling is documented and verified. |
 
 ## 1. Project Choice and Data
@@ -41,7 +41,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Report actual MAE, RMSE, and R-squared | VERIFIED | `reports/model_evaluation.json` | Test MAE 6317.40, RMSE 10895.72, R2 0.8223 |
 | Consistent vehicle year/age handling | VERIFIED | API schema/training | Raw model year used consistently; accepted range is dataset-supported 1990-2024 |
 | Save preprocessing, model, and metadata together | VERIFIED | `artifacts/` | Checksum-validated load and warm-up test passed |
-| Keep training tools out of runtime image where possible | IN_PROGRESS | Dependency extras and `Dockerfile` | Training extras excluded from runtime install; image inspection blocked by missing Docker |
+| Keep training tools out of runtime image where possible | VERIFIED | Dependency extras and `Dockerfile` | Runtime image inspection confirmed pandas and matplotlib are absent |
 | Concise analysis and useful charts | VERIFIED | `reports/` | Metrics JSON and two visually inspected charts generated |
 
 ## 2. Clean Architecture and Repository Layout
@@ -53,7 +53,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Pure domain without framework/infrastructure dependencies | VERIFIED | `src/used_car_assessor/domain/` | Forbidden-import contract kept |
 | Model behind a `Protocol` with dependency injection | VERIFIED | `service/ports.py` plus adapters | Fake and real implementations exercised |
 | Architectural contract automatically enforced | VERIFIED | `.importlinter` | 2 contracts kept, 0 broken |
-| Makefile targets: install, test, lint, image, smoke | IN_PROGRESS | `Makefile` | Targets authored; GNU Make and Docker unavailable locally |
+| Makefile targets: install, test, lint, image, smoke | VERIFIED | `Makefile` | All required targets are present; each underlying Python/Docker command was executed successfully |
 
 ## 3. Service Interface and Lifecycle
 
@@ -67,20 +67,20 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Separate `GET /health` liveness | VERIFIED | API routes | Remains 200 during dependency failure test |
 | `GET /ready` reflects model and essential service availability | VERIFIED | API routes/readiness state | Model and supporting-service failure tests return 503 |
 | Safe, consistent errors without internal detail leakage | VERIFIED | API exception handling | Internal exception detail is absent from 500 response |
-| Graceful shutdown and resource closure | IN_PROGRESS | API lifespan and adapters | Recorder close verified in integration test; container stop blocked by Docker |
+| Graceful shutdown and resource closure | VERIFIED | API lifespan and adapters | Recorder close test passed; Compose stop completed in 1.027 s with clean shutdown logs |
 
 ## 4. Containerisation and Compose
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Multi-stage image no larger than 500 MB | BLOCKED | `Dockerfile` | Build and measured `docker image inspect`; Docker unavailable locally |
-| Non-root runtime user | IN_PROGRESS | `Dockerfile` | UID 10001 configured; runtime identity check blocked by Docker |
-| Healthcheck targets `/ready` | IN_PROGRESS | `Dockerfile` | Definition reviewed; image execution blocked by Docker |
-| Clean shutdown on stop | BLOCKED | Runtime/lifespan | Timed `docker stop` logs; Docker unavailable locally |
+| Multi-stage image no larger than 500 MB | VERIFIED | `Dockerfile` | No-cache build succeeded; measured image is 471,318,528 bytes (449.5 MiB) |
+| Non-root runtime user | VERIFIED | `Dockerfile` | Runtime identity check returned UID/GID 10001 (`app`) |
+| Healthcheck targets `/ready` | VERIFIED | `Dockerfile` | Running container became healthy through the `/ready` healthcheck |
+| Clean shutdown on stop | VERIFIED | Runtime/lifespan | Stop completed in 1.027 s; logs showed `application_stopped` and shutdown complete |
 | Compose includes one genuinely useful supporting service | VERIFIED | `docker-compose.yml`, `DECISIONS.md` | Redis-backed `/v1/stats` extension and dependency-failure test |
-| Startup gated on real health | IN_PROGRESS | `docker-compose.yml` | Health condition configured; execution blocked by Docker |
+| Startup gated on real health | VERIFIED | `docker-compose.yml` | Compose waited for healthy Redis and API; measured ready startup was 31.108 s |
 | Pinned dependencies and image versions; no production `:latest` | VERIFIED | Pyproject, Docker/Compose, workflow | Exact Python dependencies and image/action versions; repository search shows no production latest tag |
-| Measure actual image size | BLOCKED | `BENCHMARKS.md` | Docker image measurement after Docker is available |
+| Measure actual image size | VERIFIED | `BENCHMARKS.md` | `docker image inspect` measured 471,318,528 bytes (449.5 MiB) |
 
 ## 5. Tests and Quality Gates
 
@@ -94,8 +94,8 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Versioned golden reference with provenance and tolerances | VERIFIED | `tests/behavioral/golden/` | v1 fixture passed with hashes and $0.05 tolerance |
 | Never regenerate golden merely to pass | VERIFIED | Golden governance README | Review/change rule documented |
 | Avoid unsupported model monotonicity assertions | VERIFIED | Behavioural tests | Directionality asserted only over asking-price policy |
-| At least 80% branch coverage on identified core layers | VERIFIED | Coverage configuration | 97.55% measured on final local gate |
-| Fast quality gate at most 60 seconds | VERIFIED | Makefile and `BENCHMARKS.md` | Full gate measured at 25.553 seconds |
+| At least 80% branch coverage on identified core layers | VERIFIED | Coverage configuration | 98.26% measured on final local gate |
+| Fast quality gate at most 60 seconds | VERIFIED | Makefile and `BENCHMARKS.md` | Full gate measured at 38.447 seconds |
 | Invalid request and decision-boundary tests | VERIFIED | Unit/integration tests | Boundary and malformed request tests passed |
 | Startup/readiness and supporting-service failure tests | VERIFIED | Integration tests | Model and recorder failure paths passed |
 | Lint, type-check, import-linter, and tests pass | VERIFIED | Tool configuration | Combined local gate passed |
@@ -128,14 +128,14 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Working GitHub repository URL | BLOCKED | `https://github.com/nawaf-ds/car-resale-ai-service` | Anonymous access returned `Repository not found`; secure authenticated access or corrected visibility/URL is required |
+| Working GitHub repository URL | IN_PROGRESS | `https://github.com/nawaf-ds/car-resale-ai-service` | Public repository exists; completed project push is pending |
 | Five or more genuine incremental commits | VERIFIED | Local Git history | Five staged commits shown by `git log --oneline -5` |
 | Passing CI on `main` with published GHCR image | BLOCKED | GitHub Actions/GHCR | Run and package URLs |
-| New-engineer runbook usable within 10 minutes | IN_PROGRESS | `README.md` | Runbook authored; clean Docker walkthrough blocked by missing Docker |
-| Real benchmark measurements and environment/method | IN_PROGRESS | `BENCHMARKS.md` | Local measurements recorded; image size/build/smoke remain blocked |
+| New-engineer runbook usable within 10 minutes | VERIFIED | `README.md` | Docker walkthrough was executed from build through ready/predict and clean stop |
+| Real benchmark measurements and environment/method | VERIFIED | `BENCHMARKS.md` | Local gate, test, image size/build, Compose startup, and shutdown measurements recorded |
 | Five substantive decisions with rationale | VERIFIED | `DECISIONS.md` | Six decisions documented |
 | One useful implemented and tested extension | VERIFIED | `/v1/stats`, Redis adapter | Extension integration test passed |
-| Five-minute demo guide | IN_PROGRESS | `DEMO.md` | Script authored; Compose rehearsal blocked by missing Docker |
+| Five-minute demo guide | VERIFIED | `DEMO.md` | Compose start, valid request, malformed request, stats, behavioral test, and stop steps were rehearsed |
 | Presenter explanation of model, policy, limitations, choices | VERIFIED | `README.md`, `DECISIONS.md`, `DEMO.md` | Concise explanation documented |
 
 ## 9. Final Audit Rules
@@ -146,7 +146,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Distinguish local, Docker, and remote verification | VERIFIED | Matrix and benchmarks label blocked Docker/remote evidence |
 | Do not fabricate measurements, provenance, CI, or permissions | VERIFIED | Missing evidence remains blocked instead of estimated |
 | Do not weaken checks or hide failures | VERIFIED | Coverage, readiness, secret, and remote blockers remain visible |
-| Keep documentation synchronized | VERIFIED | Final local gate and metrics synchronized on 2026-09-21 |
+| Keep documentation synchronized | VERIFIED | Final local and Docker evidence synchronized on 2026-09-22 |
 | No arbitrary golden regeneration | VERIFIED | Golden provenance/review workflow documented |
 | No production `:latest` tag | VERIFIED | Repository configuration reviewed; no production latest tag |
 | No meaningless coverage inflation | VERIFIED | Core scope explicit; tests exercise domain, failures, lifecycle, and real model |

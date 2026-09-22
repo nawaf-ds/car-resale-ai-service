@@ -139,6 +139,22 @@ def test_liveness_remains_up_when_supporting_service_is_down() -> None:
     assert prediction.status_code == 503
 
 
+def test_runtime_supporting_service_outage_blocks_predictions() -> None:
+    recorder = FakeRecorder()
+    client, _ = make_client(recorder)
+    with client:
+        assert client.get("/ready").status_code == 200
+        recorder.available = False
+        assert client.get("/health").status_code == 200
+        assert client.get("/ready").status_code == 503
+        prediction = client.post("/v1/predict", json=VALID_REQUEST)
+        stats = client.get("/v1/stats")
+
+    assert prediction.status_code == 503
+    assert prediction.json()["error"]["code"] == "NOT_READY"
+    assert stats.status_code == 503
+
+
 def test_model_startup_failure_reports_not_ready() -> None:
     app = create_app(
         settings(),
