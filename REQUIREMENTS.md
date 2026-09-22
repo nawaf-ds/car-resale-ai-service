@@ -106,7 +106,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 |---|---|---|---|
 | Ordered stages: lint/type-check, tests/coverage, image smoke, publish | VERIFIED | `.github/workflows/ci.yml` | Main run `35704488363` completed all four ordered jobs successfully |
 | Architectural checks and secret scanning | VERIFIED | CI workflow | Remote lint/type/architecture/secret job passed in run `35704488363` |
-| Checks run for pull requests | IN_PROGRESS | CI workflow | Trigger authored; pull-request run unavailable |
+| Checks run for pull requests | VERIFIED | CI workflow | Pull-request run `35704906558` passed on PR #1 |
 | Publish only after merged PR reaches `main` | IN_PROGRESS | CI workflow | Workflow condition and protected-main enforcement are verified; publication awaits an independently approved PR merge |
 | GHCR tag is full commit SHA, never `latest` | IN_PROGRESS | CI workflow | Full `${{ github.sha }}` tag configured; no published image yet |
 | Least-privilege permissions and GitHub authentication | VERIFIED | CI workflow | Default read-only plus package write only in publish; `GITHUB_TOKEN` used |
