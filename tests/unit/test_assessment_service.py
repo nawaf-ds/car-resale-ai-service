@@ -25,7 +25,7 @@ class FakeEstimator:
 def test_service_orchestrates_estimation_and_policy() -> None:
     service = AssessmentService(FakeEstimator(), PriceBandPolicy(), NullAssessmentRecorder())
 
-    result = service.assess(Vehicle("Toyota", "Camry", 2020, 35_000), 24_000)
+    result = service.assess(Vehicle("Toyota", "Camry", 2020, 35_000, "Used"), 24_000)
 
     assert result.band is PriceBand.ABOVE_RANGE
     assert result.estimated_value_usd == 20_000
@@ -36,7 +36,10 @@ def test_service_orchestrates_estimation_and_policy() -> None:
 
 @pytest.mark.parametrize(
     "vehicle",
-    [Vehicle("Unknown", "Camry", 2020, 35_000), Vehicle("Toyota", "Unknown", 2020, 35_000)],
+    [
+        Vehicle("Unknown", "Camry", 2020, 35_000, "Used"),
+        Vehicle("Toyota", "Unknown", 2020, 35_000, "Used"),
+    ],
 )
 def test_service_rejects_unsupported_categories(vehicle: Vehicle) -> None:
     service = AssessmentService(FakeEstimator(), PriceBandPolicy(), NullAssessmentRecorder())

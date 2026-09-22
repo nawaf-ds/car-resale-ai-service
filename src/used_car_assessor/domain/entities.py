@@ -14,6 +14,7 @@ class Vehicle:
     model: str
     model_year: int
     mileage_miles: float
+    condition: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,4 +25,3 @@ class PriceAssessment:
     upper_bound_usd: float
     band: PriceBand
     model_version: str
-

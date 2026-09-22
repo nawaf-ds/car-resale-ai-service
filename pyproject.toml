@@ -70,3 +70,6 @@ python_version = "3.11"
 strict = true
 packages = ["used_car_assessor"]
 
+[[tool.mypy.overrides]]
+module = ["joblib"]
+ignore_missing_imports = true

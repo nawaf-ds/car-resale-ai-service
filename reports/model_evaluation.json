@@ -1,0 +1,25 @@
+{
+  "validation_metrics": {
+    "median_baseline": {
+      "mae_usd": 17065.47,
+      "rmse_usd": 26276.19,
+      "r2": -0.0399
+    },
+    "ridge": {
+      "mae_usd": 7923.53,
+      "rmse_usd": 13252.49,
+      "r2": 0.7355
+    },
+    "hist_gradient_boosting": {
+      "mae_usd": 6607.46,
+      "rmse_usd": 11424.54,
+      "r2": 0.8034
+    }
+  },
+  "selected_model": "hist_gradient_boosting",
+  "untouched_test_metrics": {
+    "mae_usd": 6317.4,
+    "rmse_usd": 10895.72,
+    "r2": 0.8223
+  }
+}

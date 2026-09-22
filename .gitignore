@@ -14,7 +14,6 @@ tmp/
 
 # Local or reproducible generated artifacts
 data/raw/
-reports/figures/
 
 # The course specification is retained outside source control in this workspace.
 SDA-AIE-113-Capstone_Project-v2.pdf
