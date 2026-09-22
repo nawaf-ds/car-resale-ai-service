@@ -15,7 +15,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Docker and Compose | VERIFIED | Docker Engine 29.8.0 and Compose 5.5.1 built and ran the Linux stack successfully. |
 | GitHub access/authentication | VERIFIED | Authenticated push as `nawaf-ds` succeeded on 2026-09-22; the repository is publicly reachable. |
 | Branch-protection administration | VERIFIED | `main` requires all three CI checks, one approving review, admin enforcement, resolved conversations, and disallows force-push. |
-| Independent approving reviewer | BLOCKED | No reviewer availability is documented. Identify at least one reviewer who can approve a pull request to `main`. |
+| Independent approving reviewer | VERIFIED | `defaizanarshad` approved PR #1 before its protected merge to `main`. |
 | GNU Make | VERIFIED | Required Makefile targets are authored and every underlying command was executed successfully; GNU Make installation is not a project deliverable. |
 | `uv` package manager | VERIFIED | Optional and not selected; standard Python/pip tooling is documented and verified. |
 
@@ -104,15 +104,15 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Ordered stages: lint/type-check, tests/coverage, image smoke, publish | VERIFIED | `.github/workflows/ci.yml` | Main run `35704488363` completed all four ordered jobs successfully |
-| Architectural checks and secret scanning | VERIFIED | CI workflow | Remote lint/type/architecture/secret job passed in run `35704488363` |
+| Ordered stages: lint/type-check, tests/coverage, image smoke, publish | VERIFIED | `.github/workflows/ci.yml` | Post-merge main run `35735856120` completed all four ordered jobs successfully |
+| Architectural checks and secret scanning | VERIFIED | CI workflow | Remote lint/type/architecture/secret job passed in run `35735856120` |
 | Checks run for pull requests | VERIFIED | CI workflow | Pull-request run `35704906558` passed on PR #1 |
-| Publish only after merged PR reaches `main` | IN_PROGRESS | CI workflow | Workflow condition and protected-main enforcement are verified; publication awaits an independently approved PR merge |
-| GHCR tag is full commit SHA, never `latest` | IN_PROGRESS | CI workflow | Full `${{ github.sha }}` tag configured; no published image yet |
+| Publish only after merged PR reaches `main` | VERIFIED | CI workflow | Approved PR #1 merged; post-merge run `35735856120` published successfully |
+| GHCR tag is full commit SHA, never `latest` | VERIFIED | CI workflow | Published tag is full merge SHA `e7cd453bf6a685d5689a8ff18b39f9d2846ff0b5` |
 | Least-privilege permissions and GitHub authentication | VERIFIED | CI workflow | Default read-only plus package write only in publish; `GITHUB_TOKEN` used |
 | Main protection: required checks, one review, no force-push | VERIFIED | GitHub repository settings | GitHub API returned three required checks, one review, admin enforcement, and force-push disabled |
-| Actual passing run on `main` | VERIFIED | GitHub Actions | <https://github.com/nawaf-ds/car-resale-ai-service/actions/runs/35704488363> |
-| Actual published GHCR image | BLOCKED | GHCR | Bootstrap main run correctly skipped publication because it was not a merged PR; an independently approved PR must merge before publication |
+| Actual passing run on `main` | VERIFIED | GitHub Actions | <https://github.com/nawaf-ds/car-resale-ai-service/actions/runs/35735856120> |
+| Actual published GHCR image | VERIFIED | GHCR | <https://github.com/nawaf-ds/car-resale-ai-service/pkgs/container/car-resale-ai-service>, tag `e7cd453bf6a685d5689a8ff18b39f9d2846ff0b5` |
 
 ## 7. Configuration, Secrets, and Logging
 
@@ -130,7 +130,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 |---|---|---|---|
 | Working GitHub repository URL | VERIFIED | `https://github.com/nawaf-ds/car-resale-ai-service` | Complete project and genuine incremental history pushed successfully |
 | Five or more genuine incremental commits | VERIFIED | Local Git history | Five staged commits shown by `git log --oneline -5` |
-| Passing CI on `main` with published GHCR image | BLOCKED | GitHub Actions/GHCR | Run and package URLs |
+| Passing CI on `main` with published GHCR image | VERIFIED | GitHub Actions/GHCR | Main run `35735856120` passed and published the full-SHA GHCR tag |
 | New-engineer runbook usable within 10 minutes | VERIFIED | `README.md` | Docker walkthrough was executed from build through ready/predict and clean stop |
 | Real benchmark measurements and environment/method | VERIFIED | `BENCHMARKS.md` | Local gate, test, image size/build, Compose startup, and shutdown measurements recorded |
 | Five substantive decisions with rationale | VERIFIED | `DECISIONS.md` | Six decisions documented |

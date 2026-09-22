@@ -5,6 +5,13 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![CI](https://github.com/nawaf-ds/car-resale-ai-service/actions/workflows/ci.yml/badge.svg)](https://github.com/nawaf-ds/car-resale-ai-service/actions/workflows/ci.yml)
 
+## Project Context
+
+This project was completed as part of the **SDA-AIE-113 — Software Engineering Practices for AI Systems** training program at **[SDAIA Academy](https://github.com/SDAIAAcademy)**, under the supervision of **Abdullah Khalid AlShahrani**.
+
+The project demonstrates the practical application of software engineering practices for AI systems by building a production-style AI/ML service using clean architecture, a well-defined API contract, containerization, automated testing, CI/CD with branch protection, and secure configuration, secrets, and logging management.
+
+
 ## Overview
 
 This service estimates the advertised-market value of a US used vehicle and assesses a seller's asking price. A lightweight scikit-learn model produces the independent value estimate, then a transparent domain policy returns one of three decisions:
