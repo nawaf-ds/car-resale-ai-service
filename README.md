@@ -1,45 +1,89 @@
 # Used-Car Listing Price Assessment
 
-A production-oriented SDA-AIE-113 capstone service that estimates a US used vehicle's advertised listing value and applies explicit policy bands to classify the seller's asking price as `BELOW_RANGE`, `WITHIN_RANGE`, or `ABOVE_RANGE`.
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![CI](https://github.com/nawaf-ds/car-resale-ai-service/actions/workflows/ci.yml/badge.svg)](https://github.com/nawaf-ds/car-resale-ai-service/actions/workflows/ci.yml)
 
-The seller's asking price is never a model feature. It is compared with the independently estimated listing value only after prediction.
+## Overview
 
-## Quick start (under 10 minutes)
+This service estimates the advertised-market value of a US used vehicle and assesses a seller's asking price. A lightweight scikit-learn model produces the independent value estimate, then a transparent domain policy returns one of three decisions:
 
-### Docker Compose
+- `BELOW_RANGE`
+- `WITHIN_RANGE`
+- `ABOVE_RANGE`
 
-Prerequisites: Docker Engine/Desktop with Compose.
+The asking price is never a model input. It is compared with the estimate only after prediction. The result is an assessment aid, not a guaranteed sale valuation.
+
+## Features
+
+### Core Functionality
+
+- Used-vehicle value estimation from make, model, year, mileage, and condition
+- Configurable price-assessment bands around the estimated value
+- Strict request validation with unknown-field rejection
+- Trace-aware success and error envelopes
+- Redis-backed prediction statistics by decision band
+
+### Engineering Features
+
+- Clean `domain`, `service`, `adapters`, and `api` architecture
+- Swappable model and recorder interfaces through dependency injection
+- Separate liveness and real readiness endpoints
+- Startup-only model loading, checksum validation, and warm-up
+- Structured JSON logging correlated by trace ID
+- Multi-stage, non-root Docker image under 500 MB
+- Unit, integration, and real-model behavioural tests
+- Automated lint, typing, architecture, secret, coverage, and container checks
+
+## Tech Stack
+
+| Area | Technology |
+|---|---|
+| API | FastAPI 0.115.12, Uvicorn 0.34.2 |
+| Runtime | Python 3.11 |
+| ML | scikit-learn 1.6.1, NumPy 2.2.5, Joblib 1.4.2 |
+| Supporting service | Redis 7.4.1 |
+| Configuration | Pydantic Settings 2.9.1 |
+| Logging | Structlog 25.3.0 |
+| Quality | Pytest, Ruff, mypy, import-linter, detect-secrets |
+| Infrastructure | Docker, Docker Compose, GitHub Actions, GHCR |
+
+## Quick Start
+
+### Prerequisites
+
+- Docker Engine or Docker Desktop with Compose
+- Git, if cloning from GitHub
+
+### Installation
 
 ```bash
+git clone https://github.com/nawaf-ds/car-resale-ai-service.git
+cd car-resale-ai-service
 docker compose up --build --detach --wait
+```
+
+Verify the service:
+
+```bash
+curl --fail http://localhost:8000/health
 curl --fail http://localhost:8000/ready
 ```
 
-Stop cleanly with:
+Open the interactive API documentation at <http://localhost:8000/docs>.
+
+Stop the stack cleanly:
 
 ```bash
 docker compose down --timeout 15
 ```
 
-The stack contains the API and Redis 7.4.1. Redis provides durable assessment counters for the `/v1/stats` extension and is an essential readiness dependency rather than an unused checklist container.
+The Compose stack includes Redis because `/v1/stats` persists real assessment counters and readiness depends on Redis availability.
 
-### Local Python
+## API Usage
 
-Prerequisites: Python 3.11 and Redis reachable at `redis://localhost:6379/0`.
-
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
-python -m pip install -e ".[dev,train]"
-uvicorn used_car_assessor.api.app:app --host 127.0.0.1 --port 8000
-```
-
-Copy `.env.example` to `.env` only when configuration overrides are needed. It contains placeholders/defaults and no credentials.
-
-## API
-
-### Valid prediction
+### Create an Assessment
 
 ```bash
 curl --request POST http://localhost:8000/v1/predict \
@@ -65,51 +109,70 @@ Representative response:
 }
 ```
 
-### Malformed prediction
+### Key Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/v1/predict` | Estimate listing value and classify asking price |
+| `GET` | `/v1/stats` | Return Redis-backed assessment counters |
+| `GET` | `/health` | Report process liveness |
+| `GET` | `/ready` | Report model and Redis readiness |
+| `GET` | `/docs` | OpenAPI/Swagger documentation |
+
+Malformed requests return HTTP 422 in the same trace-aware envelope. Unsupported make/model combinations, invalid numerics, wrong types, out-of-range values, and unknown fields are rejected explicitly.
+
+## Decision Policy
+
+The default thresholds are configurable:
+
+- Below 85% of the estimate: `BELOW_RANGE`
+- From 85% through 115%, inclusive: `WITHIN_RANGE`
+- Above 115% of the estimate: `ABOVE_RANGE`
+
+These thresholds are business policy bands, not confidence intervals or model uncertainty bounds.
+
+## Model and Data
+
+The project uses the **US Sales Cars Dataset v2**, released on 2024-03-31 under Apache 2.0. It contains Cars.com advertised listings in USD, with mileage measured in miles. The committed snapshot has 144,867 rows; training retains 55,430 eligible, deduplicated records after documented filtering.
+
+The training pipeline compares a median baseline, Ridge regression, and histogram gradient boosting. The selected model achieved the following results on an untouched 8,315-row test set:
+
+| Metric | Result |
+|---|---:|
+| MAE | $6,317.40 |
+| RMSE | $10,895.72 |
+| R-squared | 0.8223 |
+
+These metrics describe historical advertised prices, not completed sales. Listings may contain regional effects, seller strategy, stale advertisements, and unobserved vehicle condition. Full provenance and limitations are documented in `data/README.md`.
+
+## Configuration
+
+Copy `.env.example` to `.env` only when overrides are required. The settings layer validates configuration at startup.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `UCA_ENVIRONMENT` | `development` | Runtime environment |
+| `UCA_LOG_LEVEL` | `INFO` | Structured log level |
+| `UCA_MODEL_PATH` | `artifacts/model.joblib` | Packaged model path |
+| `UCA_MODEL_METADATA_PATH` | `artifacts/model_metadata.json` | Model metadata path |
+| `UCA_REDIS_URL` | `redis://localhost:6379/0` | Redis connection URL |
+| `UCA_REDIS_TIMEOUT_SECONDS` | `1.0` | Redis operation timeout |
+| `UCA_POLICY_LOWER_RATIO` | `0.85` | Lower policy threshold |
+| `UCA_POLICY_UPPER_RATIO` | `1.15` | Upper policy threshold |
+
+## Local Development
+
+Prerequisites: Python 3.11 and Redis reachable at `redis://localhost:6379/0`.
 
 ```bash
-curl --request POST http://localhost:8000/v1/predict \
-  --header "Content-Type: application/json" \
-  --data '{"make":"Toyota","model":"Camry","model_year":2035,"mileage_miles":"unknown","condition":"Used","asking_price_usd":26000,"extra":"rejected"}'
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+python -m pip install -e ".[dev,train]"
+uvicorn used_car_assessor.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-This returns HTTP 422 with the same trace-aware envelope. Unknown fields, wrong types, non-finite values, out-of-range values, and unsupported make/model combinations are rejected explicitly.
-
-### Operational endpoints
-
-- `GET /health`: process liveness only.
-- `GET /ready`: model and Redis readiness; returns HTTP 503 if either is unavailable.
-- `GET /v1/stats`: Redis-backed counts by policy band (tested extension).
-
-## Model and data
-
-The source is the **US Sales Cars Dataset v2**, released 2024-03-31 under Apache 2.0. It contains Cars.com advertised listings in USD with mileage in miles. The exact scrape window is not documented by the publisher; this is recorded as a provenance limitation in `data/README.md` rather than inferred.
-
-Training starts with 144,867 rows, selects used/certified records, removes incomplete and exact duplicate rows, applies plausibility filters, and retains 55,430 rows. Data is split before learned preprocessing into train (38,801), validation (8,314), and untouched test (8,315) partitions.
-
-Compared validation models:
-
-| Model | Validation MAE | Validation RMSE | Validation R² |
-|---|---:|---:|---:|
-| Median baseline | $17,065.47 | $26,276.19 | -0.0399 |
-| Ridge | $7,923.53 | $13,252.49 | 0.7355 |
-| Histogram gradient boosting | $6,607.46 | $11,424.54 | 0.8034 |
-
-The selected histogram gradient boosting pipeline achieved **MAE $6,317.40**, **RMSE $10,895.72**, and **R² 0.8223** on the untouched test set. These are actual results from `reports/model_evaluation.json`.
-
-These metrics describe performance on historical advertised listing prices, not completed sales. The data can contain listing bias, regional effects, stale advertisements, unobserved vehicle condition, and seller strategy. The service is an assessment aid, not a valuation guarantee.
-
-## Decision policy
-
-Default policy bands are configurable with `UCA_POLICY_LOWER_RATIO` and `UCA_POLICY_UPPER_RATIO`:
-
-- asking price below 85% of estimate: `BELOW_RANGE`
-- asking price from 85% through 115%, inclusive: `WITHIN_RANGE`
-- asking price above 115%: `ABOVE_RANGE`
-
-These are transparent business policy bands, not confidence intervals and not model uncertainty bounds.
-
-## Quality commands
+## Testing and Quality
 
 ```bash
 make install
@@ -120,27 +183,47 @@ make image
 make smoke
 ```
 
-Equivalent direct test command:
+Direct test commands:
 
 ```bash
 python -m pytest --cov --cov-branch --cov-report=term-missing
-```
-
-The behavioural suite uses the real packaged model:
-
-```bash
 python -m pytest -m behavioral -q
 ```
 
-The golden fixture is governed by `tests/behavioral/golden/README.md`; never regenerate it merely to make a failing test pass.
+The verified suite contains 38 tests with 98.26% branch coverage on the configured core layers. The real-model behavioural suite checks identifier invariance, asking-price directionality, and a governed versioned golden reference.
 
 ## Architecture
 
-- `domain`: pure vehicle, result, and policy rules.
-- `service`: assessment orchestration plus `Protocol` ports.
-- `adapters`: scikit-learn artifact and Redis implementations.
-- `api`: FastAPI schemas, lifecycle, envelopes, trace/logging, and settings.
+```text
+src/used_car_assessor/
+|-- domain/      Pure entities and price-band policy
+|-- service/     Assessment orchestration and Protocol ports
+|-- adapters/    scikit-learn model and Redis implementations
+`-- api/         FastAPI routes, schemas, lifecycle, settings, and logging
+```
 
-`import-linter` enforces this dependency direction automatically. The model and Redis clients are created and warmed only inside the application lifespan, never during module import.
+`import-linter` enforces the dependency direction automatically. Model and Redis clients are created and warmed only during the application lifespan, never at module import time.
 
-See `DECISIONS.md`, `BENCHMARKS.md`, `DEMO.md`, and `REQUIREMENTS.md` for rationale, measured evidence, presentation steps, and the complete acceptance audit.
+## CI/CD
+
+GitHub Actions runs the following ordered pipeline:
+
+1. Lint, type-check, architecture validation, and secret scan
+2. Tests with the branch-coverage gate
+3. Docker Compose image smoke test
+4. GHCR publication after a merged pull request reaches protected `main`
+
+Published images use the full commit SHA and never the `latest` tag.
+
+## Project Documentation
+
+- `BENCHMARKS.md`: measured test, build, image, startup, and shutdown results
+- `DECISIONS.md`: engineering decisions and rationale
+- `DEMO.md`: five-minute demonstration guide
+- `REQUIREMENTS.md`: complete capstone traceability matrix
+- `data/README.md`: dataset provenance, license, units, and limitations
+
+## Repository
+
+- GitHub: <https://github.com/nawaf-ds/car-resale-ai-service>
+- Issues: <https://github.com/nawaf-ds/car-resale-ai-service/issues>
