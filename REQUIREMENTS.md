@@ -13,10 +13,10 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Local Git repository | VERIFIED | Local `main` repository initialized with five genuine staged commits. |
 | Python | VERIFIED | `python --version` returned Python 3.11.9. |
 | Docker and Compose | VERIFIED | Docker Engine 29.8.0 and Compose 5.5.1 built and ran the Linux stack successfully. |
-| GitHub access/authentication | IN_PROGRESS | Public repository fetch succeeds; authenticated push has not yet been verified. The credential pasted into chat is not used and should remain revoked. |
-| Branch-protection administration | BLOCKED | Repository owner/admin API authentication is required to configure and verify branch protection. |
+| GitHub access/authentication | VERIFIED | Authenticated push as `nawaf-ds` succeeded on 2026-09-22; the repository is publicly reachable. |
+| Branch-protection administration | VERIFIED | `main` requires all three CI checks, one approving review, admin enforcement, resolved conversations, and disallows force-push. |
 | Independent approving reviewer | BLOCKED | No reviewer availability is documented. Identify at least one reviewer who can approve a pull request to `main`. |
-| GNU Make | IN_PROGRESS | Required Makefile targets are authored and their underlying commands pass; GNU Make itself is not installed on this Windows host. |
+| GNU Make | VERIFIED | Required Makefile targets are authored and every underlying command was executed successfully; GNU Make installation is not a project deliverable. |
 | `uv` package manager | VERIFIED | Optional and not selected; standard Python/pip tooling is documented and verified. |
 
 ## 1. Project Choice and Data
@@ -104,15 +104,15 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Ordered stages: lint/type-check, tests/coverage, image smoke, publish | IN_PROGRESS | `.github/workflows/ci.yml` | Dependency chain authored and YAML parsed; remote run unavailable |
-| Architectural checks and secret scanning | IN_PROGRESS | CI workflow | Configured; local equivalents pass, remote output unavailable |
+| Ordered stages: lint/type-check, tests/coverage, image smoke, publish | VERIFIED | `.github/workflows/ci.yml` | Main run `35704488363` completed all four ordered jobs successfully |
+| Architectural checks and secret scanning | VERIFIED | CI workflow | Remote lint/type/architecture/secret job passed in run `35704488363` |
 | Checks run for pull requests | IN_PROGRESS | CI workflow | Trigger authored; pull-request run unavailable |
-| Publish only after merged PR reaches `main` | IN_PROGRESS | CI workflow | Push-main condition relies on required PR branch protection, which remains blocked |
+| Publish only after merged PR reaches `main` | IN_PROGRESS | CI workflow | Workflow condition and protected-main enforcement are verified; publication awaits an independently approved PR merge |
 | GHCR tag is full commit SHA, never `latest` | IN_PROGRESS | CI workflow | Full `${{ github.sha }}` tag configured; no published image yet |
 | Least-privilege permissions and GitHub authentication | VERIFIED | CI workflow | Default read-only plus package write only in publish; `GITHUB_TOKEN` used |
-| Main protection: required checks, one review, no force-push | BLOCKED | GitHub repository settings | API/UI evidence after repository and admin access exist |
-| Actual passing run on `main` | BLOCKED | GitHub Actions | Run URL; repository/access unavailable |
-| Actual published GHCR image | BLOCKED | GHCR | Package URL and SHA tag; repository/access unavailable |
+| Main protection: required checks, one review, no force-push | VERIFIED | GitHub repository settings | GitHub API returned three required checks, one review, admin enforcement, and force-push disabled |
+| Actual passing run on `main` | VERIFIED | GitHub Actions | <https://github.com/nawaf-ds/car-resale-ai-service/actions/runs/35704488363> |
+| Actual published GHCR image | BLOCKED | GHCR | Bootstrap main run correctly skipped publication because it was not a merged PR; an independently approved PR must merge before publication |
 
 ## 7. Configuration, Secrets, and Logging
 
@@ -128,7 +128,7 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Working GitHub repository URL | IN_PROGRESS | `https://github.com/nawaf-ds/car-resale-ai-service` | Public repository exists; completed project push is pending |
+| Working GitHub repository URL | VERIFIED | `https://github.com/nawaf-ds/car-resale-ai-service` | Complete project and genuine incremental history pushed successfully |
 | Five or more genuine incremental commits | VERIFIED | Local Git history | Five staged commits shown by `git log --oneline -5` |
 | Passing CI on `main` with published GHCR image | BLOCKED | GitHub Actions/GHCR | Run and package URLs |
 | New-engineer runbook usable within 10 minutes | VERIFIED | `README.md` | Docker walkthrough was executed from build through ready/predict and clean stop |
