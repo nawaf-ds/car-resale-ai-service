@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "provenance": {
+    "created_on": "2026-09-21",
+    "review_reason": "Initial golden reference for packaged model 2026-09-21-v1",
+    "dataset_sha256": "25854afc3ef8b6c6a0349bf7f422c40dacb9bec60a8b318462737ebf9edcc5ea",
+    "model_sha256": "31aa9866a94fe07485025cadc715282484601ef0224f2d09ed8689116b95c005",
+    "generation_command": ".venv/Scripts/python scripts/train.py",
+    "review_rule": "Do not replace expected values solely to make a failing test pass. Investigate and review model or dependency changes first."
+  },
+  "cases": [
+    {
+      "name": "used_toyota_camry_2020",
+      "vehicle": {
+        "make": "Toyota",
+        "model": "Camry",
+        "model_year": 2020,
+        "mileage_miles": 40000,
+        "condition": "Used"
+      },
+      "asking_price_usd": 26000,
+      "expected": {
+        "estimated_value_usd": 25819.03,
+        "absolute_tolerance_usd": 0.05,
+        "lower_bound_usd": 21946.18,
+        "upper_bound_usd": 29691.89,
+        "band": "WITHIN_RANGE",
+        "model_version": "2026-09-21-v1"
+      }
+    }
+  ]
+}

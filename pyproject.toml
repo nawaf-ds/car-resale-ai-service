@@ -24,6 +24,7 @@ train = [
   "pandas==2.2.3",
 ]
 dev = [
+  "detect-secrets==1.5.0",
   "httpx==0.28.1",
   "import-linter==2.3",
   "mypy==1.15.0",

@@ -1,7 +1,7 @@
 PYTHON ?= python
 IMAGE ?= used-car-assessor:local
 
-.PHONY: install test lint image smoke
+.PHONY: install test lint fast image smoke
 
 install:
 	$(PYTHON) -m pip install -e ".[dev,train]"
@@ -13,6 +13,9 @@ lint:
 	$(PYTHON) -m ruff check src tests scripts
 	$(PYTHON) -m mypy src
 	lint-imports
+	$(PYTHON) scripts/check_secrets.py
+
+fast: lint test
 
 image:
 	docker build --tag $(IMAGE) .
@@ -21,4 +24,3 @@ smoke:
 	docker compose up --build --detach --wait
 	curl --fail --silent http://localhost:8000/ready
 	docker compose down
-
