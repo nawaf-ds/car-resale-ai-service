@@ -9,107 +9,107 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 | Item | Status | Evidence / exact next action |
 |---|---|---|
 | Instructor approval for Track B idea | VERIFIED | Project owner supplied explicit approval confirmation on 2026-09-21; recorded in `APPROVAL_PROPOSAL.md`. Preserve the original instructor message/email separately if formal evidence is required. |
-| Existing project or dataset | NOT_STARTED | Workspace inspection found only the capstone PDF; no source repository or dataset exists. |
-| Local Git repository | BLOCKED | `git rev-parse --is-inside-work-tree` reported that this directory is not a Git repository. Initialize only after project approval. |
+| Existing project or dataset | VERIFIED | Approved project and checksum-pinned dataset snapshot now exist locally. |
+| Local Git repository | VERIFIED | Local `main` repository initialized with five genuine staged commits. |
 | Python | VERIFIED | `python --version` returned Python 3.11.9. |
 | Docker and Compose | BLOCKED | `docker` is not installed or not on `PATH`. Install Docker Desktop with Compose, start it, and verify `docker info` plus `docker compose version`. |
 | GitHub access/authentication | BLOCKED | Repository supplied as `https://github.com/nawaf-ds/car-resale-ai-service`, but anonymous `git ls-remote` returned `Repository not found`. The credential pasted into chat must be revoked and will not be used. Authenticate securely through Git Credential Manager/GitHub CLI, or correct repository visibility/URL, then retry. |
 | Branch-protection administration | BLOCKED | No GitHub repository or authenticated access is available. Repository owner/admin access is required to configure rulesets or branch protection. |
 | Independent approving reviewer | BLOCKED | No reviewer availability is documented. Identify at least one reviewer who can approve a pull request to `main`. |
 | GNU Make | BLOCKED | `make` is not installed or not on `PATH`; required Makefile targets can be authored later but cannot yet be locally invoked. |
-| `uv` package manager | NOT_STARTED | `uv` is unavailable. It is optional; standard Python tooling may be used unless the approved implementation chooses otherwise. |
+| `uv` package manager | VERIFIED | Optional and not selected; standard Python/pip tooling is documented and verified. |
 
 ## 1. Project Choice and Data
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
 | Track B idea approved before building | VERIFIED | `APPROVAL_PROPOSAL.md` | Project owner supplied explicit instructor-approval confirmation on 2026-09-21 |
-| Clear 2-3 option decision | NOT_STARTED | `src/used_car_assessor/domain/` | Policy unit tests for `BELOW_RANGE`, `WITHIN_RANGE`, `ABOVE_RANGE` |
-| Tabular or short-text input only | NOT_STARTED | API schemas and dataset documentation | Schema and dataset audit |
-| Lightweight model | NOT_STARTED | `src/used_car_assessor/adapters/model/` | Training script and measured CPU training run |
-| Deterministic behavioural test | NOT_STARTED | `tests/behavioral/` | Real-model behavioural test run |
-| Public used-car dataset with permitted usage and provenance | NOT_STARTED | `data/README.md`, model card, `README.md` | Source URL, licence/terms, and downloaded-file checksum |
-| Verify availability, columns, currency, mileage units, period, and market | NOT_STARTED | `data/README.md` | Recorded source inspection and schema/data checks |
-| Do not invent data, metrics, provenance, or downloads | NOT_STARTED | Repository-wide | Review against actual artifacts and command output |
-| Document advertised-price versus sale-price limitation | NOT_STARTED | `README.md`, model card | Documentation review |
-| Baseline plus two suitable regression models if feasible | NOT_STARTED | `scripts/train.py`, analysis report | Reproducible comparison on validation data |
-| Reproducible missing-value and categorical preprocessing | NOT_STARTED | Model pipeline adapter | Unit/integration tests and serialized pipeline inspection |
-| Fit learned preprocessing only on training data | NOT_STARTED | Training pipeline | Split-before-fit code review and tests |
-| Prevent target and duplicate leakage | NOT_STARTED | Training pipeline | Feature audit and duplicate/group split checks |
-| Asking price excluded from value-estimation features | NOT_STARTED | Feature schema and training pipeline | Feature-name assertion in tests and model metadata |
-| Untouched final test set | NOT_STARTED | Training pipeline and metadata | Split manifest/checksums and one-time final evaluation |
-| Report actual MAE, RMSE, and R-squared | NOT_STARTED | Model report/model metadata | Reproduced metrics from untouched test set |
-| Consistent vehicle year/age handling | NOT_STARTED | Feature engineering and model card | Tests tied to dataset observation period |
-| Save preprocessing, model, and metadata together | NOT_STARTED | Versioned model artifact | Startup/load integration test and metadata validation |
-| Keep training tools out of runtime image where possible | NOT_STARTED | Dependency files and `Dockerfile` | Runtime dependency/image inspection |
-| Concise analysis and useful charts | NOT_STARTED | `reports/` | Reproducible report generated from selected data |
+| Clear 2-3 option decision | VERIFIED | `src/used_car_assessor/domain/` | Boundary tests cover all three bands |
+| Tabular or short-text input only | VERIFIED | API schemas and `data/README.md` | Five tabular model features audited |
+| Lightweight model | VERIFIED | `src/used_car_assessor/adapters/model.py` | CPU training completed; artifact is 279,524 bytes |
+| Deterministic behavioural test | VERIFIED | `tests/behavioral/` | 3 real-model behavioural tests passed |
+| Public used-car dataset with permitted usage and provenance | VERIFIED | `data/README.md`, `README.md` | Official Kaggle metadata, Apache 2.0, source links, hashes recorded |
+| Verify availability, columns, currency, mileage units, period, and market | VERIFIED | `data/README.md` | Actual 144,867x7 snapshot audited; missing exact scrape window disclosed |
+| Do not invent data, metrics, provenance, or downloads | VERIFIED | Repository-wide | Reports and docs use generated artifacts and observed output |
+| Document advertised-price versus sale-price limitation | VERIFIED | `README.md`, `data/README.md` | Limitation stated explicitly |
+| Baseline plus two suitable regression models if feasible | VERIFIED | `scripts/train.py`, `reports/model_evaluation.json` | Median, Ridge, and histogram-gradient validation metrics recorded |
+| Reproducible missing-value and categorical preprocessing | VERIFIED | Serialized sklearn pipelines | Imputation/encoding are pipeline steps |
+| Fit learned preprocessing only on training data | VERIFIED | `scripts/train.py` | Split occurs before candidate pipeline fit |
+| Prevent target and duplicate leakage | VERIFIED | `scripts/train.py` | Asking price excluded; exact duplicates dropped before split |
+| Asking price excluded from value-estimation features | VERIFIED | Feature schema and metadata | Five feature names recorded; metadata asserts false |
+| Untouched final test set | VERIFIED | Training pipeline and metadata | 8,315-row test set evaluated only after validation selection/refit |
+| Report actual MAE, RMSE, and R-squared | VERIFIED | `reports/model_evaluation.json` | Test MAE 6317.40, RMSE 10895.72, R2 0.8223 |
+| Consistent vehicle year/age handling | VERIFIED | API schema/training | Raw model year used consistently; accepted range is dataset-supported 1990-2024 |
+| Save preprocessing, model, and metadata together | VERIFIED | `artifacts/` | Checksum-validated load and warm-up test passed |
+| Keep training tools out of runtime image where possible | IN_PROGRESS | Dependency extras and `Dockerfile` | Training extras excluded from runtime install; image inspection blocked by missing Docker |
+| Concise analysis and useful charts | VERIFIED | `reports/` | Metrics JSON and two visually inspected charts generated |
 
 ## 2. Clean Architecture and Repository Layout
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Python `src` layout | NOT_STARTED | `src/used_car_assessor/` | Package/import test |
-| Separate domain, service, adapters, and API layers | NOT_STARTED | Corresponding package directories | Import-linter contract passes |
-| Pure domain without framework/infrastructure dependencies | NOT_STARTED | `src/used_car_assessor/domain/` | Import-linter and dependency review |
-| Model behind a `Protocol` with dependency injection | NOT_STARTED | Service port plus adapter implementation | Unit test using a fake model and integration test using real adapter |
-| Architectural contract automatically enforced | NOT_STARTED | `.importlinter` | `lint-imports` passes |
-| Makefile targets: install, test, lint, image, smoke | NOT_STARTED | `Makefile` | Each target invoked successfully |
+| Python `src` layout | VERIFIED | `src/used_car_assessor/` | Package installed editable and tests imported it |
+| Separate domain, service, adapters, and API layers | VERIFIED | Corresponding package directories | Import-linter layer contract kept |
+| Pure domain without framework/infrastructure dependencies | VERIFIED | `src/used_car_assessor/domain/` | Forbidden-import contract kept |
+| Model behind a `Protocol` with dependency injection | VERIFIED | `service/ports.py` plus adapters | Fake and real implementations exercised |
+| Architectural contract automatically enforced | VERIFIED | `.importlinter` | 2 contracts kept, 0 broken |
+| Makefile targets: install, test, lint, image, smoke | IN_PROGRESS | `Makefile` | Targets authored; GNU Make and Docker unavailable locally |
 
 ## 3. Service Interface and Lifecycle
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| `POST /v1/predict` | NOT_STARTED | API routes | Integration and smoke tests |
-| Unified success/error envelope with trace ID | NOT_STARTED | API response/error handling | Valid and invalid request tests |
-| Strict validation and unknown-field rejection | NOT_STARTED | API request schemas | Boundary and extra-field tests |
-| Reject invalid numerics and unsupported categories explicitly | NOT_STARTED | API/domain validation | NaN/infinity/range/category tests |
-| Model load and warm-up only during startup | NOT_STARTED | API lifespan/bootstrap | Import-side-effect and startup tests |
-| Separate `GET /health` liveness | NOT_STARTED | API routes | Endpoint test independent of readiness |
-| `GET /ready` reflects model and essential service availability | NOT_STARTED | API routes/readiness state | Startup and dependency-failure tests |
-| Safe, consistent errors without internal detail leakage | NOT_STARTED | API exception handling | Error-response and log tests |
-| Graceful shutdown and resource closure | NOT_STARTED | API lifespan and adapters | Process/container stop verification |
+| `POST /v1/predict` | VERIFIED | API routes | Fake and real-model integration/behaviour tests passed |
+| Unified success/error envelope with trace ID | VERIFIED | API response/error handling | Success, validation, readiness, and internal-error tests passed |
+| Strict validation and unknown-field rejection | VERIFIED | API request schemas | Strict types, ranges, and extra-field test passed |
+| Reject invalid numerics and unsupported categories explicitly | VERIFIED | API/domain validation | Numeric-string/non-finite schema controls and unsupported-category test |
+| Model load and warm-up only during startup | VERIFIED | API lifespan/bootstrap | Real behavioural client starts/warm-ups model in lifespan |
+| Separate `GET /health` liveness | VERIFIED | API routes | Remains 200 during dependency failure test |
+| `GET /ready` reflects model and essential service availability | VERIFIED | API routes/readiness state | Model and supporting-service failure tests return 503 |
+| Safe, consistent errors without internal detail leakage | VERIFIED | API exception handling | Internal exception detail is absent from 500 response |
+| Graceful shutdown and resource closure | IN_PROGRESS | API lifespan and adapters | Recorder close verified in integration test; container stop blocked by Docker |
 
 ## 4. Containerisation and Compose
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
 | Multi-stage image no larger than 500 MB | BLOCKED | `Dockerfile` | Build and measured `docker image inspect`; Docker unavailable locally |
-| Non-root runtime user | NOT_STARTED | `Dockerfile` | Container identity check |
-| Healthcheck targets `/ready` | NOT_STARTED | `Dockerfile` | Image inspection and unhealthy-model test |
+| Non-root runtime user | IN_PROGRESS | `Dockerfile` | UID 10001 configured; runtime identity check blocked by Docker |
+| Healthcheck targets `/ready` | IN_PROGRESS | `Dockerfile` | Definition reviewed; image execution blocked by Docker |
 | Clean shutdown on stop | BLOCKED | Runtime/lifespan | Timed `docker stop` logs; Docker unavailable locally |
-| Compose includes one genuinely useful supporting service | NOT_STARTED | `docker-compose.yml`, decision record | Functional dependency integration and failure test |
-| Startup gated on real health | NOT_STARTED | `docker-compose.yml` | Compose startup/failure observation |
-| Pinned dependencies and image versions; no production `:latest` | NOT_STARTED | Lock files, Docker/Compose, workflow | Repository search and build inspection |
+| Compose includes one genuinely useful supporting service | VERIFIED | `docker-compose.yml`, `DECISIONS.md` | Redis-backed `/v1/stats` extension and dependency-failure test |
+| Startup gated on real health | IN_PROGRESS | `docker-compose.yml` | Health condition configured; execution blocked by Docker |
+| Pinned dependencies and image versions; no production `:latest` | VERIFIED | Pyproject, Docker/Compose, workflow | Exact Python dependencies and image/action versions; repository search shows no production latest tag |
 | Measure actual image size | BLOCKED | `BENCHMARKS.md` | Docker image measurement after Docker is available |
 
 ## 5. Tests and Quality Gates
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Meaningful unit tests | NOT_STARTED | `tests/unit/` | Test run |
-| Integration tests | NOT_STARTED | `tests/integration/` | Test run |
-| Behavioural tests against the real model | NOT_STARTED | `tests/behavioral/` | Test run using selected artifact |
-| Invariance to irrelevant identifier | NOT_STARTED | Behavioural tests | Same prediction/decision under identifier change |
-| Directional asking-price behaviour | NOT_STARTED | Behavioural tests | Increasing asking price never moves toward a cheaper band |
-| Versioned golden reference with provenance and tolerances | NOT_STARTED | `tests/behavioral/golden/` | Reviewed fixture and golden test |
-| Never regenerate golden merely to pass | NOT_STARTED | Contributor docs / golden provenance | Review process documented |
-| Avoid unsupported model monotonicity assertions | NOT_STARTED | Behavioural tests | Test review confirms policy-only directional claim |
-| At least 80% branch coverage on identified core layers | NOT_STARTED | Coverage configuration | Coverage report and enforced threshold |
-| Fast quality gate at most 60 seconds | NOT_STARTED | Makefile/script and `BENCHMARKS.md` | Timed local run |
-| Invalid request and decision-boundary tests | NOT_STARTED | Unit/integration tests | Test run |
-| Startup/readiness and supporting-service failure tests | NOT_STARTED | Integration tests | Test run |
-| Lint, type-check, import-linter, and tests pass | NOT_STARTED | Tool configuration | Fast/full quality-gate output |
+| Meaningful unit tests | VERIFIED | `tests/unit/` | Full local test run passed |
+| Integration tests | VERIFIED | `tests/integration/` | Full local test run passed |
+| Behavioural tests against the real model | VERIFIED | `tests/behavioral/` | 3 behavioural tests passed |
+| Invariance to irrelevant identifier | VERIFIED | Behavioural tests | `listing_id` A/B produced identical response data |
+| Directional asking-price behaviour | VERIFIED | Behavioural tests | Band order observed 0,1,2 with fixed estimate |
+| Versioned golden reference with provenance and tolerances | VERIFIED | `tests/behavioral/golden/` | v1 fixture passed with hashes and $0.05 tolerance |
+| Never regenerate golden merely to pass | VERIFIED | Golden governance README | Review/change rule documented |
+| Avoid unsupported model monotonicity assertions | VERIFIED | Behavioural tests | Directionality asserted only over asking-price policy |
+| At least 80% branch coverage on identified core layers | VERIFIED | Coverage configuration | 97.55% measured on final local gate |
+| Fast quality gate at most 60 seconds | VERIFIED | Makefile and `BENCHMARKS.md` | Full gate measured at 25.553 seconds |
+| Invalid request and decision-boundary tests | VERIFIED | Unit/integration tests | Boundary and malformed request tests passed |
+| Startup/readiness and supporting-service failure tests | VERIFIED | Integration tests | Model and recorder failure paths passed |
+| Lint, type-check, import-linter, and tests pass | VERIFIED | Tool configuration | Combined local gate passed |
 
 ## 6. CI/CD and GitHub
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Ordered stages: lint/type-check, tests/coverage, image smoke, publish | NOT_STARTED | `.github/workflows/ci.yml` | Actual GitHub Actions run graph |
-| Architectural checks and secret scanning | NOT_STARTED | CI workflow | Actual check output |
-| Checks run for pull requests | NOT_STARTED | CI workflow | Pull-request run |
-| Publish only after merged PR reaches `main` | NOT_STARTED | CI workflow | Trigger/condition review and actual main run |
-| GHCR tag is full commit SHA, never `latest` | NOT_STARTED | CI workflow | Published package tag inspection |
-| Least-privilege permissions and GitHub authentication | NOT_STARTED | CI workflow | Workflow review |
+| Ordered stages: lint/type-check, tests/coverage, image smoke, publish | IN_PROGRESS | `.github/workflows/ci.yml` | Dependency chain authored and YAML parsed; remote run unavailable |
+| Architectural checks and secret scanning | IN_PROGRESS | CI workflow | Configured; local equivalents pass, remote output unavailable |
+| Checks run for pull requests | IN_PROGRESS | CI workflow | Trigger authored; pull-request run unavailable |
+| Publish only after merged PR reaches `main` | IN_PROGRESS | CI workflow | Push-main condition relies on required PR branch protection, which remains blocked |
+| GHCR tag is full commit SHA, never `latest` | IN_PROGRESS | CI workflow | Full `${{ github.sha }}` tag configured; no published image yet |
+| Least-privilege permissions and GitHub authentication | VERIFIED | CI workflow | Default read-only plus package write only in publish; `GITHUB_TOKEN` used |
 | Main protection: required checks, one review, no force-push | BLOCKED | GitHub repository settings | API/UI evidence after repository and admin access exist |
 | Actual passing run on `main` | BLOCKED | GitHub Actions | Run URL; repository/access unavailable |
 | Actual published GHCR image | BLOCKED | GHCR | Package URL and SHA tag; repository/access unavailable |
@@ -118,36 +118,36 @@ This checklist maps the authoritative requirements in `SDA-AIE-113-Capstone_Proj
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
-| Central typed settings with immediate validation | NOT_STARTED | Configuration module | Valid/invalid configuration tests |
-| Safe placeholder-only `.env.example` | NOT_STARTED | `.env.example` | Manual and secret-scan review |
-| Structured JSON logs correlated by trace ID | NOT_STARTED | Logging middleware/config | Captured log tests |
-| No sensitive data, credentials, or full request bodies in logs | NOT_STARTED | Logging implementation | Captured log tests and review |
-| Scan current files and Git history for secrets | BLOCKED | CI and local command | Current tree can be scanned later; no Git history exists yet |
+| Central typed settings with immediate validation | VERIFIED | `api/settings.py` | Invalid values raise typed validation errors |
+| Safe placeholder-only `.env.example` | VERIFIED | `.env.example` | Manual review and secret scan passed |
+| Structured JSON logs correlated by trace ID | VERIFIED | Logging middleware/config | JSON request logs observed during integration tests |
+| No sensitive data, credentials, or full request bodies in logs | VERIFIED | Logging implementation | Middleware logs metadata only; safe 500 response test passed |
+| Scan current files and Git history for secrets | VERIFIED | `scripts/check_secrets.py` | Actual result: 0 current-tree findings, 0 history findings |
 
 ## 8. Deliverables
 
 | Requirement | Status | Planned location | Verification evidence |
 |---|---|---|---|
 | Working GitHub repository URL | BLOCKED | `https://github.com/nawaf-ds/car-resale-ai-service` | Anonymous access returned `Repository not found`; secure authenticated access or corrected visibility/URL is required |
-| Five or more genuine incremental commits | BLOCKED | Git history | `git log`; no repository exists and implementation is approval-gated |
+| Five or more genuine incremental commits | VERIFIED | Local Git history | Five staged commits shown by `git log --oneline -5` |
 | Passing CI on `main` with published GHCR image | BLOCKED | GitHub Actions/GHCR | Run and package URLs |
-| New-engineer runbook usable within 10 minutes | NOT_STARTED | `README.md` | Fresh-environment walkthrough |
-| Real benchmark measurements and environment/method | BLOCKED | `BENCHMARKS.md` | Measured builds/tests/image; required tooling incomplete |
-| Five substantive decisions with rationale | NOT_STARTED | `DECISIONS.md` | Documentation review |
-| One useful implemented and tested extension | NOT_STARTED | To be selected after approval | Feature-specific tests |
-| Five-minute demo guide | NOT_STARTED | `DEMO.md` | Timed rehearsal |
-| Presenter explanation of model, policy, limitations, choices | NOT_STARTED | `README.md`, model card, `DEMO.md` | Documentation review and rehearsal |
+| New-engineer runbook usable within 10 minutes | IN_PROGRESS | `README.md` | Runbook authored; clean Docker walkthrough blocked by missing Docker |
+| Real benchmark measurements and environment/method | IN_PROGRESS | `BENCHMARKS.md` | Local measurements recorded; image size/build/smoke remain blocked |
+| Five substantive decisions with rationale | VERIFIED | `DECISIONS.md` | Six decisions documented |
+| One useful implemented and tested extension | VERIFIED | `/v1/stats`, Redis adapter | Extension integration test passed |
+| Five-minute demo guide | IN_PROGRESS | `DEMO.md` | Script authored; Compose rehearsal blocked by missing Docker |
+| Presenter explanation of model, policy, limitations, choices | VERIFIED | `README.md`, `DECISIONS.md`, `DEMO.md` | Concise explanation documented |
 
 ## 9. Final Audit Rules
 
 | Rule | Status | Evidence / control |
 |---|---|---|
-| Never claim an unrun command passed | IN_PROGRESS | Verification evidence must cite actual command output |
-| Distinguish local, Docker, and remote verification | IN_PROGRESS | Status reports and final audit use separate evidence labels |
-| Do not fabricate measurements, provenance, CI, or permissions | IN_PROGRESS | Block missing evidence instead of estimating |
-| Do not weaken checks or hide failures | IN_PROGRESS | Failures remain documented until resolved |
-| Keep documentation synchronized | NOT_STARTED | Final repository audit |
-| No arbitrary golden regeneration | NOT_STARTED | Golden provenance/review workflow |
-| No production `:latest` tag | NOT_STARTED | Repository search and published-tag inspection |
-| No meaningless coverage inflation | NOT_STARTED | Core-layer scope and test review |
-| Original work with no unexplained peer similarity | NOT_STARTED | Implementation and commit history review |
+| Never claim an unrun command passed | VERIFIED | Verification evidence cites actual command output |
+| Distinguish local, Docker, and remote verification | VERIFIED | Matrix and benchmarks label blocked Docker/remote evidence |
+| Do not fabricate measurements, provenance, CI, or permissions | VERIFIED | Missing evidence remains blocked instead of estimated |
+| Do not weaken checks or hide failures | VERIFIED | Coverage, readiness, secret, and remote blockers remain visible |
+| Keep documentation synchronized | VERIFIED | Final local gate and metrics synchronized on 2026-09-21 |
+| No arbitrary golden regeneration | VERIFIED | Golden provenance/review workflow documented |
+| No production `:latest` tag | VERIFIED | Repository configuration reviewed; no production latest tag |
+| No meaningless coverage inflation | VERIFIED | Core scope explicit; tests exercise domain, failures, lifecycle, and real model |
+| Original work with no unexplained peer similarity | IN_PROGRESS | Implementation and commit history are original to this workspace; external institutional review remains outside local verification |

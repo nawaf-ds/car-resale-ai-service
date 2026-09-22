@@ -46,6 +46,12 @@ class FakeRecorder:
         self.closed = True
 
 
+class FailingRecorder(FakeRecorder):
+    def record(self, band: str) -> None:
+        del band
+        raise RuntimeError("sensitive internal detail")
+
+
 def settings() -> Settings:
     return Settings(
         environment="test",
@@ -55,14 +61,16 @@ def settings() -> Settings:
     )
 
 
-def make_client(recorder: FakeRecorder | None = None) -> tuple[TestClient, FakeRecorder]:
+def make_client(
+    recorder: FakeRecorder | None = None, *, raise_server_exceptions: bool = True
+) -> tuple[TestClient, FakeRecorder]:
     active_recorder = recorder or FakeRecorder()
     app = create_app(
         settings(),
         estimator_loader=lambda model_path, metadata_path: FakeEstimator(),
         recorder_factory=lambda url, timeout: active_recorder,
     )
-    return TestClient(app), active_recorder
+    return TestClient(app, raise_server_exceptions=raise_server_exceptions), active_recorder
 
 
 VALID_REQUEST = {
@@ -142,3 +150,17 @@ def test_model_startup_failure_reports_not_ready() -> None:
     with TestClient(app) as client:
         assert client.get("/health").status_code == 200
         assert client.get("/ready").status_code == 503
+
+
+def test_internal_exception_uses_safe_error_envelope() -> None:
+    client, _ = make_client(FailingRecorder(), raise_server_exceptions=False)
+    with client:
+        response = client.post("/v1/predict", json=VALID_REQUEST)
+
+    assert response.status_code == 500
+    assert response.json()["error"] == {
+        "code": "INTERNAL_ERROR",
+        "message": "An internal error occurred",
+        "details": [],
+    }
+    assert "sensitive internal detail" not in response.text
