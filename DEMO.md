@@ -59,3 +59,23 @@ docker compose down --timeout 15
 
 Remote CI, GHCR, and branch-protection evidence must be shown from actual GitHub URLs once repository authentication and owner configuration are completed.
 
+## Demo Screenshots
+
+### API Overview
+![API Overview](docs/images/swagger-overview.jpeg)
+
+### Valid Prediction Request
+![Valid Prediction Request](docs/images/swagger-valid-request.jpeg)
+
+### Invalid Request / Validation Error
+![Invalid Request](docs/images/swagger-invalid-request.jpeg)
+
+### PowerShell Validation
+![PowerShell Validation](docs/images/powershell-validation.jpeg)
+
+### Docker Containers
+![Docker Containers](docs/images/docker-containers.jpeg)
+
+### Docker Images
+![Docker Images](docs/images/docker-images.jpeg)
+
