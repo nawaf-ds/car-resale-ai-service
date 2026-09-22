@@ -1,0 +1,10 @@
+.git
+.github
+.venv
+data
+reports
+tests
+tmp
+*.md
+SDA-AIE-113-Capstone_Project-v2.pdf
+

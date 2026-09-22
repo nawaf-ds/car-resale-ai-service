@@ -18,6 +18,8 @@ class AssessmentRecorder(Protocol):
 
     def ping(self) -> bool: ...
 
+    def snapshot(self) -> Mapping[str, int]: ...
+
     def close(self) -> None: ...
 
 
@@ -28,6 +30,8 @@ class NullAssessmentRecorder:
     def ping(self) -> bool:
         return True
 
+    def snapshot(self) -> Mapping[str, int]:
+        return {"total": 0}
+
     def close(self) -> None:
         return None
-

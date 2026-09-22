@@ -1,0 +1,31 @@
+services:
+  redis:
+    image: redis:7.4.1-alpine3.20
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      UCA_POLICY_LOWER_RATIO: ${UCA_POLICY_LOWER_RATIO:-0.85}
+      UCA_POLICY_UPPER_RATIO: ${UCA_POLICY_UPPER_RATIO:-1.15}
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    stop_grace_period: 15s
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+
