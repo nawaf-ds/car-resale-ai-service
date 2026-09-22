@@ -1,0 +1,20 @@
+.coverage
+.env
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+__pycache__/
+*.egg-info/
+*.py[cod]
+build/
+dist/
+htmlcov/
+tmp/
+
+# Local or reproducible generated artifacts
+data/raw/
+reports/figures/
+
+# The course specification is retained outside source control in this workspace.
+SDA-AIE-113-Capstone_Project-v2.pdf
