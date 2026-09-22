@@ -1,0 +1,25 @@
+[importlinter]
+root_package = used_car_assessor
+include_external_packages = True
+
+[importlinter:contract:layers]
+name = Clean architecture layers
+type = layers
+layers =
+    used_car_assessor.api
+    used_car_assessor.adapters
+    used_car_assessor.service
+    used_car_assessor.domain
+
+[importlinter:contract:domain-independence]
+name = Domain has no framework or infrastructure dependencies
+type = forbidden
+source_modules =
+    used_car_assessor.domain
+forbidden_modules =
+    fastapi
+    joblib
+    pydantic
+    redis
+    sklearn
+    structlog

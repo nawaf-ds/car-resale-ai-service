@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools==75.8.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "used-car-assessor"
+version = "0.1.0"
+description = "Used-car listing value assessment service"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "fastapi==0.115.12",
+  "joblib==1.4.2",
+  "numpy==2.2.5",
+  "pydantic-settings==2.9.1",
+  "redis==5.2.1",
+  "scikit-learn==1.6.1",
+  "structlog==25.3.0",
+  "uvicorn==0.34.2",
+]
+
+[project.optional-dependencies]
+train = [
+  "matplotlib==3.10.3",
+  "pandas==2.2.3",
+]
+dev = [
+  "httpx==0.28.1",
+  "import-linter==2.3",
+  "mypy==1.15.0",
+  "pandas-stubs==2.2.3.250308",
+  "pytest==8.3.5",
+  "pytest-cov==6.1.1",
+  "ruff==0.11.10",
+  "types-redis==4.6.0.20241004",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+  "behavioral: tests that exercise the packaged real model",
+  "integration: tests across application components",
+]
+
+[tool.coverage.run]
+branch = true
+source = [
+  "used_car_assessor.domain",
+  "used_car_assessor.service",
+  "used_car_assessor.api",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["used_car_assessor"]
+
